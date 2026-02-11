@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+
+# Conda
+*.conda
+*.tar.bz2
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VS Code
+.vscode/
+
+# Mac
+.DS_Store
+
+# Pytest
+.pytest_cache/
+*.pyc
+
+# Coverage
+.coverage
+htmlcov/
+
+# Logs
+*.log
