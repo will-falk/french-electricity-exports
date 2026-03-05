@@ -8,17 +8,28 @@ client = EntsoePandasClient(api_key=API_KEY)
 start = pd.Timestamp('20250101', tz='Europe/Brussels')
 end = pd.Timestamp.now(tz='Europe/Brussels') - pd.Timedelta(days=1)
 
+def check_inbound_outbound_frames(key, outbound, inbound):
+    checks = [ 
+        outbound.columns.equals(inbound.columns),
+        outbound.shape == inbound.shape,
+        outbound.isnull().sum().equals(inbound.isnull().sum()),
+        outbound.head(2).index.equals(inbound.head(2).index),
+        outbound.tail(2).index.equals(inbound.tail(2).index)
+    ]
+    
+    all_checks_pass = all(checks)
+    print(f"All checks pass for {key}: {all_checks_pass}")
+
 fr_bidding_zone = 'FR'
-no_bidding_zones_all = ['NO_1', 'NO_1A', 'NO_2', 'NO_2_NSL', 'NO_2A', 'NO_3', 'NO_4', 'NO_5']
-no_bidding_zones_skip = ['NO_1A', 'NO_2A']
+fr_outbound = client.query_physical_crossborder_allborders(fr_bidding_zone, start, end, export=True, per_hour=True)
+fr_inbound = client.query_physical_crossborder_allborders(fr_bidding_zone, start, end, export=False, per_hour=True)
 
-fr_all_borders_outbound = client.query_physical_crossborder_allborders(fr_bidding_zone, start, end, export=True, per_hour=True)
-fr_all_borders_inbound = client.query_physical_crossborder_allborders(fr_bidding_zone, start, end, export=False, per_hour=True)
-
+no_bidding_zones = ['NO_1', 'NO_2', 'NO_3', 'NO_4', 'NO_5']
+#not avail: 'NO_1A', 'NO_2A', 'NO_2_NSL'
 no_outbound = {}
 no_inbound = {}
 
-for zone in no_bidding_zones_all:
+for zone in no_bidding_zones:
     try:
         no_outbound[zone] = client.query_physical_crossborder_allborders(zone, start, end, export=True, per_hour=True)
     except KeyError:
@@ -28,3 +39,13 @@ for zone in no_bidding_zones_all:
         no_inbound[zone] = client.query_physical_crossborder_allborders(zone, start, end, export=False, per_hour=True)
     except KeyError:
         print(f"{zone} inbound not recognized, skipping")
+
+
+check_inbound_outbound_frames(fr_bidding_zone, fr_outbound, fr_inbound)
+
+for key in no_bidding_zones:
+    check_inbound_outbound_frames(key, no_outbound[key], no_inbound[key])
+   
+  
+    
+    
