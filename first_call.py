@@ -18,7 +18,9 @@ def check_inbound_outbound_frames(key, outbound, inbound):
     ]
     
     all_checks_pass = all(checks)
-    print(f"All checks pass for {key}: {all_checks_pass}")
+    if all_checks_pass:
+        print(f"All checks pass for {key}: {all_checks_pass}")
+        return True
 
 fr_bidding_zone = 'FR'
 fr_outbound = client.query_physical_crossborder_allborders(fr_bidding_zone, start, end, export=True, per_hour=True)
@@ -41,10 +43,15 @@ for zone in no_bidding_zones:
         print(f"{zone} inbound not recognized, skipping")
 
 
-check_inbound_outbound_frames(fr_bidding_zone, fr_outbound, fr_inbound)
+if check_inbound_outbound_frames(fr_bidding_zone, fr_outbound, fr_inbound):
+    fr_net = fr_outbound + fr_inbound
 
+no_net = {}
 for key in no_bidding_zones:
-    check_inbound_outbound_frames(key, no_outbound[key], no_inbound[key])
+    if check_inbound_outbound_frames(key, no_outbound[key], no_inbound[key]):
+        no_net[key] = no_outbound[key] + no_inbound[key]
+        
+        
    
   
     
