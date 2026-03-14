@@ -59,34 +59,52 @@ time_periods = {
     "monthly": "ME"
 }
 
-# build fr dictionary for export
+# build fr time period dictionary
 fr_net_frames_by_period = {}
 for key, rule in time_periods.items():
     fr_net_frames_by_period[key] = fr_net.resample(rule).sum()
 
 fr_net.to_csv("fr_net.csv", index=True)
 
-for period, df in fr_net_frames_by_period.items():
-    df.to_csv(f"fr_net_{period}.csv", index=True)
-
-# build no dictionary for export
+# build no time period dictionary
 no_net_frames_by_period = {}
 for key, rule in time_periods.items():
-    fr_net_frames_by_period[key] = fr_net.resample(rule).sum()
+    no_net_frames_by_period[key] = no_net.resample(rule).sum()
 
-fr_net.to_csv("fr_net.csv", index=True)
+####cleaning up norway
+# Drop Norwegian columns and set timestamp as index
+cleaned_dfs = []
+for df in dfs:
+    cols_to_drop = [col for col in df.columns if col in norwegian_zones]
+    df_cleaned = df.drop(columns=cols_to_drop).set_index('timestamp')
+    cleaned_dfs.append(df_cleaned)
 
-for period, df in fr_net_frames_by_period.items():
-    df.to_csv(f"fr_net_{period}.csv", index=True)
-    
-for zone, df in no_net.items():
-    df.to_csv(f"no_net_{zone}.csv", index=True)
-    
-fr_outbound.to_csv(f"fr_out.csv", index=True)
-fr_inbound.to_csv(f"fr_in.csv", index=True)
-    
-no_outbound["NO_1"].to_csv(f"no_out_NO_1.csv", index=True)
-no_inbound["NO_1"].to_csv(f"no_in_NO_1.csv", index=True)
+# Add them together, treating missing columns as 0
+result = cleaned_dfs[0]
+for df in cleaned_dfs[1:]:
+    result = result.add(df, fill_value=0)
 
-no_outbound["NO_2"].to_csv(f"no_out_NO_2.csv", index=True)
-no_inbound["NO_2"].to_csv(f"no_in_NO_2.csv", index=True)
+result = result.reset_index()
+
+
+# exports
+
+# fr_net.to_csv("fr_net.csv", index=True)
+
+# for period, df in fr_net_frames_by_period.items():
+#     df.to_csv(f"fr_net_{period}.csv", index=True)
+    
+# for zone, df in no_net.items():
+#     df.to_csv(f"no_net_{zone}.csv", index=True)
+
+# for period, df in fr_net_frames_by_period.items():
+#     df.to_csv(f"fr_net_{period}.csv", index=True)
+    
+# fr_outbound.to_csv(f"fr_out.csv", index=True)
+# fr_inbound.to_csv(f"fr_in.csv", index=True)
+    
+# no_outbound["NO_1"].to_csv(f"no_out_NO_1.csv", index=True)
+# no_inbound["NO_1"].to_csv(f"no_in_NO_1.csv", index=True)
+
+# no_outbound["NO_2"].to_csv(f"no_out_NO_2.csv", index=True)
+# no_inbound["NO_2"].to_csv(f"no_in_NO_2.csv", index=True)
