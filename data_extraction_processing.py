@@ -1,9 +1,11 @@
 from entsoe import EntsoePandasClient
 import pandas as pd
+from dotenv import load_dotenv
+import os
 
-API_KEY = "***REMOVED***"
-
-client = EntsoePandasClient(api_key=API_KEY)
+load_dotenv()
+API_TOKEN_ENTSOE = os.getenv("API_TOKEN_ENTSOE")
+client = EntsoePandasClient(api_key=API_TOKEN_ENTSOE)
 
 start = pd.Timestamp('20250101', tz='Europe/Brussels')
 end = pd.Timestamp.now(tz='Europe/Brussels') - pd.Timedelta(days=1)
