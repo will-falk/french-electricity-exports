@@ -88,7 +88,6 @@ no_final_frames_by_period = {}
 for key, rule in time_periods.items():
     no_final_frames_by_period[key] = no_net_cleaned_condensed.resample(rule).sum()
 
-
 # no exports for validation
 # for zone, df in no_net.items():
 #     df.to_csv(f"no_net_{zone}.csv", index=True)
