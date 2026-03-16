@@ -28,7 +28,10 @@ def check_inbound_outbound_frames(key, outbound, inbound):
 # get fr inbound and outbound (single bidding zone)
 fr_bidding_zone = 'FR'
 fr_outbound = client.query_physical_crossborder_allborders(fr_bidding_zone, start, end, export=True, per_hour=True)
+fr_outbound.drop(columns="sum")
+
 fr_inbound = client.query_physical_crossborder_allborders(fr_bidding_zone, start, end, export=False, per_hour=True)
+fr_inbound.drop(columns="sum")
 
 #get no inbound and outbound (multiple bidding zones), inactive = ['NO_1A', 'NO_2A', 'NO_2_NSL']
 no_bidding_zones_active = ['NO_1', 'NO_2', 'NO_3', 'NO_4', 'NO_5']
@@ -38,14 +41,15 @@ no_inbound = {}
 for zone in no_bidding_zones_active:
     try:
         no_outbound[zone] = client.query_physical_crossborder_allborders(zone, start, end, export=True, per_hour=True)
+        no_outbound[zone].drop(columns="sum")
     except KeyError:
         print(f"{zone} outbound not recognized, skipping")
         
     try:
         no_inbound[zone] = client.query_physical_crossborder_allborders(zone, start, end, export=False, per_hour=True)
+        no_inbound[zone].drop(columns="sum")
     except KeyError:
         print(f"{zone} inbound not recognized, skipping")
-
 
 # check and net fr inbound and outbound
 if check_inbound_outbound_frames(fr_bidding_zone, fr_outbound, fr_inbound):
@@ -56,7 +60,6 @@ no_net = {}
 for key in no_bidding_zones_active:
     if check_inbound_outbound_frames(key, no_outbound[key], no_inbound[key]):
         no_net[key] = no_inbound[key] - no_outbound[key]
-
 
 #drop no domestic bidding zones
 no_net_cleaned = []
@@ -70,8 +73,7 @@ no_net_cleaned_condensed = no_net_cleaned[0]
 for df in no_net_cleaned[1:]:
     no_net_cleaned_condensed = no_net_cleaned_condensed.add(df, fill_value=0)
 
-
-#define periodizations
+#define periods
 time_periods = {
     "daily": "D",
     "weekly": "W",
@@ -97,9 +99,7 @@ for key, rule in time_periods.items():
 # for period, df in no_final_frames_by_period.items():
 #     df.to_csv(f"no_final_{period}.csv", index=True)
 
-
-
-#france exports for validation   
+#fr exports for validation   
 # fr_outbound.to_csv(f"fr_out.csv", index=True)
 # fr_inbound.to_csv(f"fr_in.csv", index=True)
 
