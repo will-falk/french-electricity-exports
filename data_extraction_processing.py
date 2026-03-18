@@ -28,10 +28,11 @@ def check_inbound_outbound_frames(key, outbound, inbound):
 # get fr inbound and outbound (single bidding zone)
 fr_bidding_zone = 'FR'
 fr_outbound = client.query_physical_crossborder_allborders(fr_bidding_zone, start, end, export=True, per_hour=True)
-fr_outbound.drop(columns="sum")
+fr_outbound = fr_outbound.drop(columns="sum", errors='ignore')
+
 
 fr_inbound = client.query_physical_crossborder_allborders(fr_bidding_zone, start, end, export=False, per_hour=True)
-fr_inbound.drop(columns="sum")
+fr_inbound = fr_inbound.drop(columns="sum", errors='ignore')
 
 #get no inbound and outbound (multiple bidding zones), inactive = ['NO_1A', 'NO_2A', 'NO_2_NSL']
 no_bidding_zones_active = ['NO_1', 'NO_2', 'NO_3', 'NO_4', 'NO_5']
@@ -41,13 +42,13 @@ no_inbound = {}
 for zone in no_bidding_zones_active:
     try:
         no_outbound[zone] = client.query_physical_crossborder_allborders(zone, start, end, export=True, per_hour=True)
-        no_outbound[zone].drop(columns="sum")
+        no_outbound[zone] = no_outbound[zone].drop(columns="sum", errors='ignore')
     except KeyError:
         print(f"{zone} outbound not recognized, skipping")
         
     try:
         no_inbound[zone] = client.query_physical_crossborder_allborders(zone, start, end, export=False, per_hour=True)
-        no_inbound[zone].drop(columns="sum")
+        no_inbound[zone] = no_inbound[zone].drop(columns="sum", errors='ignore')
     except KeyError:
         print(f"{zone} inbound not recognized, skipping")
 
