@@ -4,4 +4,3 @@ I wrote the Python that extracts and processes the ENTSO-E data myself, used Cla
 
 You can view the live visualization here:
 https://french-electricity-exports.onrender.com/
-_Note: Select a time period in order to trigger the visualization_
